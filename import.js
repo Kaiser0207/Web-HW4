@@ -19,15 +19,12 @@ db.serialize(() => {
         input: fs.createReadStream('COA_OpenData_padded.csv'),
         crlfDelay: Infinity
     });
-
     let isFirst = true;
-
     rl.on('line', (line) => {
         if (isFirst) {
             isFirst = false;
             return;
         }
-
         // 以逗號分割欄位
         const [date, lunar, c175, c_kh, egg, c200] = line.split(',');
 
