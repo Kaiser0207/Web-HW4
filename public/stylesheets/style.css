@@ -1,0 +1,180 @@
+body {
+  padding: 50px;
+  font: 16px "Segoe UI", "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: linear-gradient(135deg, #b3cfff 0%, #ffe0e0 100%);
+  min-height: 100vh;
+  color: #222;
+}
+
+a {
+  color: #baccf4;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: #baccf4;
+}
+
+h1 {
+  margin-bottom: 30px;
+  color: #222;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+form, #searchBtn, #rangeBtn, #searchDate, #searchStart, #searchEnd {
+  margin-bottom: 20px;
+}
+
+form label {
+  display: inline-block;
+  width: 110px;
+  margin-bottom: 10px;
+  color: #333;
+  font-weight: 500;
+}
+
+form input, input[type="date"], input[type="text"], input[type="number"], select {
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.7);
+  font-size: 16px;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+form input:focus, input:focus, select:focus {
+  border: 1.5px solid #baccf4;
+  box-shadow: 0 2px 12px rgba(41,151,255,0.10);
+}
+
+button {
+  background: rgba(255,255,255,0.65);
+  color: #baccf4;
+  border: 1.5px solid rgba(41,151,255,0.13);
+  padding: 10px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  backdrop-filter: blur(8px);
+}
+button:hover {
+  background: rgba(41,151,255,0.10);
+  color: #baccf4;
+  box-shadow: 0 4px 16px rgba(41,151,255,0.13);
+}
+
+#eggTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 25px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  border: 1.5px solid rgba(0,122,255,0.10);
+}
+
+#eggTable th, #eggTable td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e0e7ef;
+  text-align: center;
+  font-size: 17px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(6px);
+}
+
+#eggTable th {
+  background: rgba(0,122,255,0.10);
+  color: #222;
+  font-weight: bold;
+}
+
+#eggTable tr:last-child td {
+  border-bottom: none;
+}
+
+#eggTable tr:nth-child(even) {
+  background: rgba(255,0,0,0.03);
+}
+
+#eggTable tr:hover {
+  background: rgba(0,122,255,0.13);
+}
+
+#msg {
+  color: #007700;
+  font-weight: bold;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+/* 卡片圓角透明玻璃感樣式 */
+.card {
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  border: 1px solid rgba(255,255,255,0.35);
+  padding: 24px 18px;
+  margin: 18px 0;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  transition: box-shadow 0.2s;
+}
+
+/* 卡片標題字體放大、加粗 */
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  color: #222;
+}
+
+.title, .warning {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.warning {
+  color: #b85c00;
+  background: rgba(255, 230, 180, 0.25);
+  border-radius: 12px;
+  padding: 10px 0;
+  font-size: 1.08rem;
+  box-shadow: 0 1px 4px rgba(255,200,100,0.06);
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.flex-item-table, .flex-item-chart {
+  flex: 1 1 0;
+  min-width: 340px;
+  max-width: 1200px;
+}
+
+#searchResult {
+  max-width: 100%;
+}
+
+#lineChart {
+  max-width: 100%;
+  height: 520px !important;
+  background: transparent;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}

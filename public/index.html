@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>親子丼身價</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <style>
+    .flex-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+    }
+    .flex-item-table {
+      flex: 1 1 0;
+      min-width: 700px;
+      max-width: 1200px;
+    }
+    .flex-item-chart {
+      flex: 1 1 0;
+      min-width: 700px;
+      max-width: 1200px;
+    }
+    #lineChart {
+      max-width: 100%;
+      height: 350px !important;
+    }
+    #searchResult, #eggTable {
+      max-width: 100%;
+    }
+    </style>
+</head>
+<body>
+<div class="title">
+  <h1>歷年雞肉及蛋價格</h1>
+</div>
+<div class="warning">
+  <p>請注意：資料庫中日期格式為YYYY/MM/DD，請依此格式輸入，ex:2024/05/01</p>
+</div>
+  <form id="eggForm">
+  </form>
+  <p id="msg"></p>
+<hr>
+<div class="card">
+  <p class="card-title">查詢資料</p>
+  <label for="searchDate">選擇日期：</label>
+  <input type="date" id="searchDate" name="searchDate">
+  <label for="searchName">商品名稱：</label>
+  <select id="searchName" name="searchName">
+    <option value="chicken_175_195">白肉雞(1.75-1.95Kg)</option>
+    <option value="chicken_kh">白肉雞(門市價高屏)</option>
+    <option value="egg_price">雞蛋(產地)</option>
+    <option value="chicken_200">白肉雞(2.0Kg以上)</option>
+  </select>
+  <button id="searchBtn">查詢</button>
+</div>
+<hr>
+<div class="card">
+  <p class="card-title">查詢時間範圍資料</p>
+  <label for="searchStart">起始日期：</label>
+  <input type="date" id="searchStart" name="searchStart">
+  <label for="searchEnd">結束日期：</label>
+  <input type="date" id="searchEnd" name="searchEnd"><br>
+  <label for="rangeType">商品名稱：</label>
+  <select id="rangeType" name="rangeType">
+    <option value="chicken_175_195">白肉雞(1.75-1.95Kg)</option>
+    <option value="chicken_kh">白肉雞(門市價高屏)</option>
+    <option value="egg_price">雞蛋(產地)</option>
+    <option value="chicken_200">白肉雞(2.0Kg以上)</option>
+  </select>
+  <button id="rangeBtn">區間查詢</button>
+</div>
+<hr>
+<div class="flex-row">
+  <div class="flex-item-table">
+    <div id="searchResult"></div>
+    <table id="eggTable" border="1">
+      <thead>
+        <tr><th>ID</th><th>日期</th><th>商品名稱</th><th>價格</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="flex-item-chart">
+    <canvas id="lineChart" height="300"></canvas>
+  </div>
+</div>
+<script>
+// 商品名稱對應顯示
+const nameMap = {
+  chicken_175_195: '白肉雞(1.75-1.95Kg)',
+  chicken_kh: '白肉雞(門市價高屏)',
+  egg_price: '雞蛋(產地)',
+  chicken_200: '白肉雞(2.0Kg以上)'
+};
+// 新增資料
+const eggForm = document.getElementById('eggForm');
+eggForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const date = document.getElementById('date').value.replace(/-/g, '/');
+  const name = document.getElementById('name').value;
+  const price = document.getElementById('price').value;
+  const res = await fetch('/api/insert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, name, price })
+  });
+  const msg = await res.text();
+  document.getElementById('msg').textContent = msg;
+  if (res.ok) {
+    eggForm.reset();
+  }
+});
+// 查詢功能
+const searchBtn = document.getElementById('searchBtn');
+searchBtn.addEventListener('click', async function() {
+  const date = document.getElementById('searchDate').value;
+  const name = document.getElementById('searchName').value;
+  const tbody = document.querySelector('#eggTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('searchResult').textContent = '';
+  if (!date || !name) {
+    tbody.innerHTML = '<tr><td colspan="4">請選擇日期與商品名稱</td></tr>';
+    return;
+  }
+  const dateNoZero = date.replace(/-/g, '/').replace(/\b0+(\d)/g, '$1');
+  let url = `/api?date=${dateNoZero}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    tbody.innerHTML = '<tr><td colspan="4">查詢失敗</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4">查無資料</td></tr>';
+  } else {
+    const inputDate = date.replace(/-/g, '/');
+    const row = data.find(r => {
+      if (!r.date) return false;
+      const d1 = r.date.replace(/\b0+(\d)/g, '$1');
+      const d2 = inputDate.replace(/\b0+(\d)/g, '$1');
+      return d1 === d2;
+    });
+    if (!row) {
+      tbody.innerHTML = '<tr><td colspan="4">查無資料</td></tr>';
+    } else {
+      const price = row[name];
+      if (price === null || price === undefined || price === '') {
+        tbody.innerHTML = '<tr><td colspan="4">查無資料</td></tr>';
+      } else {
+        tbody.innerHTML = `<tr><td>${row.id}</td><td>${row.date}</td><td>${nameMap[name]}</td><td>${price}</td></tr>`;
+      }
+    }
+  }
+});
+// 區間查詢功能
+const rangeBtn = document.getElementById('rangeBtn');
+rangeBtn.addEventListener('click', function() {
+  const start = document.getElementById('searchStart').value;
+  const end = document.getElementById('searchEnd').value;
+  const type = document.getElementById('rangeType').value;
+  if (start && end) {
+    let url = `/api/range?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    if (type) url += `&type=${encodeURIComponent(type)}`;
+    loadEggTableByUrl(url);
+    drawLineChart(url, type);
+  }
+});
+
+let lineChart = null;
+async function drawLineChart(url, type) {
+  const res = await fetch(url);
+  if (!res.ok) return;
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    if (lineChart) lineChart.destroy();
+    return;
+  }
+  // 取出日期與價格資料
+  let labels = [];
+  let prices = [];
+  let labelName;
+  if (type) {
+    labelName = nameMap[type] || type;
+  } else {
+    type = 'egg_price';
+    labelName = nameMap['egg_price'];
+  }
+
+  // 判斷時間範圍
+  const parseDate = d => new Date(d.replace(/\//g, '-'));
+  const startDate = parseDate(data[0].date);
+  const endDate = parseDate(data[data.length - 1].date);
+  const diffDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+  if (diffDays > 365) {
+    // 超過一年，按月分組取平均
+    const monthMap = {};
+    data.forEach(row => {
+      const date = parseDate(row.date);
+      const ym = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+      if (!monthMap[ym]) monthMap[ym] = [];
+      monthMap[ym].push(Number(row[type]));
+    });
+    labels = Object.keys(monthMap);
+    prices = labels.map(ym => {
+      const arr = monthMap[ym].filter(v => !isNaN(v));
+      if (arr.length === 0) return null;
+      return (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2);
+    });
+    labelName += '（每月平均）';
+  } else if (diffDays > 60) {
+    // 超過兩個月，按週分組取平均
+    const weekMap = {};
+    data.forEach(row => {
+      const date = parseDate(row.date);
+      // 以每週一為週起始
+      const year = date.getFullYear();
+      const firstDay = new Date(year, 0, 1);
+      const days = Math.floor((date - firstDay) / (24 * 60 * 60 * 1000));
+      const week = Math.ceil((days + firstDay.getDay() + 1) / 7);
+      const key = year + '-W' + String(week).padStart(2, '0');
+      if (!weekMap[key]) weekMap[key] = [];
+      weekMap[key].push(Number(row[type]));
+    });
+    labels = Object.keys(weekMap);
+    prices = labels.map(wk => {
+      const arr = weekMap[wk].filter(v => !isNaN(v));
+      if (arr.length === 0) return null;
+      return (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2);
+    });
+    labelName += '（每週平均）';
+  } else {
+    // 60天內，顯示每日
+    labels = data.map(row => row.date);
+    prices = data.map(row => row[type]);
+  }
+
+  const ctx = document.getElementById('lineChart').getContext('2d');
+  if (lineChart) lineChart.destroy();
+  lineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: labelName + ' 價格走勢',
+        data: prices,
+        borderColor: '#7f9bea',
+        backgroundColor: 'rgba(0,183,255,0.1)',
+        fill: true,
+        tension: 0.2
+      }]
+    },
+    options: {
+      responsive: true,
+      aspectRatio: 1.8,
+      plugins: {
+        legend: { display: true },
+        title: { display: true, text: labelName + ' 價格折線圖' }
+      },
+      scales: {
+        x: { title: { display: true, text: diffDays > 365 ? '月份' : (diffDays > 60 ? '週' : '日期') } },
+        y: {
+          title: { display: true, text: '價格' },
+          min: 0,
+          max: 100
+        }
+      }
+    }
+  });
+}
+
+async function loadEggTableByUrl(url) {
+  const tbody = document.querySelector('#eggTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('searchResult').textContent = '';
+  const res = await fetch(url);
+  if (!res.ok) {
+    tbody.innerHTML = '<tr><td colspan="4">查詢失敗</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4">查無資料</td></tr>';
+  } else {
+    const type = document.getElementById('rangeType').value;
+    data.forEach(row => {
+      if (!type) {
+        Object.keys(nameMap).forEach(key => {
+          if (row[key] !== null && row[key] !== undefined) {
+            tbody.innerHTML += `<tr><td>${row.id}</td><td>${row.date}</td><td>${nameMap[key]}</td><td>${row[key]}</td></tr>`;
+          }
+        });
+      } else {
+        let price = row[type];
+        let nameText = nameMap[type] || type;
+        if (price !== null && price !== undefined) {
+          tbody.innerHTML += `<tr><td>${row.id}</td><td>${row.date}</td><td>${nameText}</td><td>${price}</td></tr>`;
+        }
+      }
+    });
+  }
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
+
