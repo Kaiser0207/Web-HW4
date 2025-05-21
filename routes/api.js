@@ -175,7 +175,7 @@ router.post('/items', (req, res) => {
                     return res.status(500).json({ error: '資料新增失敗' });
                 }
 
-                res.status(201).send(`已新增 ${padDate} 的商品價格為 ${priceNum}`);
+                res.status(201).send(`已新增 ${padDate} 的 ${displayName} 價格為 ${priceNum}`);
             });
         }
     });
